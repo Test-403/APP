@@ -1,5 +1,11 @@
-import DeviceDashboard from './components/DeviceDashboard';
+import React from 'react';
+import { PaperProvider } from 'react-native-paper';
+import HomeScreen from './src/screens/HomeScreen';
 
 export default function App() {
-  return <DeviceDashboard />;
+  return (
+    <PaperProvider>
+      <HomeScreen />
+    </PaperProvider>
+  );
 }
