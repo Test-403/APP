@@ -20,12 +20,21 @@ npm install
 ### 2. 项目依赖
 ```bash
 # 核心依赖（已安装）
-- expo: ~52.0.49
-- react-native-ble-plx: ^3.5.1  # 蓝牙库
-- react-native-paper: ^6.x  # UI 组件库
-- react-native-vector-icons: ^10.x  # 图标库
-- expo-asset: ~11.0.5  # 资源管理
-- expo-dev-client: ~5.0.20  # 开发客户端
+- expo: ~52.0.49                          # Expo SDK
+- react-native-ble-plx: ^3.5.1            # 蓝牙库
+- react-native-paper: ^5.15.3             # UI 组件库
+- react-native-vector-icons: ^10.3.0      # 图标库
+- expo-asset: ~11.0.5                     # 资源管理
+- expo-dev-client: ~5.0.20                # 开发客户端
+- expo-status-bar: ~2.0.1                 # 状态栏
+- expo-constants: ~17.0.8                 # 环境变量
+
+# 网络与数据
+- axios: ^1.16.1                          # HTTP 请求
+- @react-native-async-storage/async-storage: 1.23.1  # 本地缓存
+
+# 图表组件
+- react-native-gifted-charts: ^1.4.77     # 图表库
 ```
 
 ## 二、开发流程
