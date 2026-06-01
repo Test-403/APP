@@ -42,7 +42,9 @@
     },
     "owner": "litiezhu",
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      "expo-font",
+      "expo-secure-store"
     ]
   }
 }

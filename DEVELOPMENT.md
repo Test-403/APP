@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-- **技术栈**：Expo SDK 52 + React Native 0.76.6
+- **技术栈**：Expo SDK 52 + React Native 0.76.9
 - **核心功能**：蓝牙设备连接 + 大语言模型 API 调用
 - **UI 组件库**：React Native Paper
 
@@ -21,13 +21,21 @@ npm install
 ```bash
 # 核心依赖（已安装）
 - expo: ~52.0.49                          # Expo SDK
+- react: 18.3.1                           # React
+- react-native: 0.76.9                    # React Native
 - react-native-ble-plx: ^3.5.1            # 蓝牙库
 - react-native-paper: ^5.15.3             # UI 组件库
 - react-native-vector-icons: ^10.3.0      # 图标库
+
+# Expo 模块
 - expo-asset: ~11.0.5                     # 资源管理
 - expo-dev-client: ~5.0.20                # 开发客户端
 - expo-status-bar: ~2.0.1                 # 状态栏
 - expo-constants: ~17.0.8                 # 环境变量
+- expo-font: ~13.0.4                      # 字体支持
+- expo-secure-store: ~13.0.0              # 安全存储
+- expo-splash-screen: ~0.27.5             # 启动页
+- expo-permissions: ~15.0.2               # 权限管理
 
 # 网络与数据
 - axios: ^1.16.1                          # HTTP 请求
@@ -35,6 +43,17 @@ npm install
 
 # 图表组件
 - react-native-gifted-charts: ^1.4.77     # 图表库
+
+# 导航
+- @react-navigation/native                # 导航核心
+- @react-navigation/native-stack          # 栈导航
+- react-native-screens                    # 屏幕组件
+- react-native-safe-area-context          # 安全区域
+
+# Web 支持
+- react-dom                               # React DOM
+- react-native-web                        # React Native Web
+- @expo/metro-runtime                     # Metro 运行时
 ```
 
 ## 二、开发流程
