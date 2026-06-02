@@ -6,9 +6,9 @@ import { COLORS } from '../constants/colors';
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text variant="headlineLarge">蓝牙数据采集</Text>
+      <Text variant="headlineLarge">蓝牙数据采集,聚会复合物</Text>
       <Text variant="bodyMedium" style={styles.description}>
-        连接蓝牙设备，读取传感器数据，上传到云端
+        连接蓝牙设备，读取传感器数据，上传到云端AAAAAA
       </Text>
       <Button mode="contained" onPress={() => navigation?.navigate('Device')}>
         开始连接设备
