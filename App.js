@@ -1,11 +1,6 @@
 import React from 'react';
-import { PaperProvider } from 'react-native-paper';
-import HomeScreen from './src/screens/HomeScreen';
+import TestAIReport from './Test';
 
 export default function App() {
-  return (
-    <PaperProvider>
-      <HomeScreen />
-    </PaperProvider>
-  );
+  return <TestAIReport />;
 }

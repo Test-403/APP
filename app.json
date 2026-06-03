@@ -38,7 +38,8 @@
     "extra": {
       "eas": {
         "projectId": "a06768cb-31de-4c54-8bc9-14f3a4181298"
-      }
+      },
+      "DEEPSEEK_API_KEY": "sk-9078091e27f64714a56d52eee058ae68"
     },
     "owner": "litiezhu",
     "plugins": [
