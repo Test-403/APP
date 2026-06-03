@@ -8,4 +8,12 @@ export const COLORS = {
   success: '#34C759',
   warning: '#FF9500',
   error: '#FF3B30',
+  
+  // 空气质量等级颜色
+  aqiExcellent: '#00E400',
+  aqiGood: '#FFFF00',
+  aqiLightPollution: '#FF7E00',
+  aqiMediumPollution: '#FF0000',
+  aqiHeavyPollution: '#9932CC',
+  aqiSeverePollution: '#7E0023',
 };
