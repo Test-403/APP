@@ -1,226 +1,169 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Button, Card, ActivityIndicator } from 'react-native-paper';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { COLORS } from '../constants/colors';
-import AirQualityCard from '../components/AirQualityCard';
+import { useSensor } from '../context/SensorContext';
 
-const getAQILevel = (aqi) => {
-  if (aqi <= 50) return { level: '优', color: COLORS.aqiExcellent, desc: '空气质量令人满意，基本无污染' };
-  if (aqi <= 100) return { level: '良', color: COLORS.aqiGood, desc: '空气质量可接受，某些污染物可能对少数敏感人群有影响' };
-  if (aqi <= 150) return { level: '轻度污染', color: COLORS.aqiLightPollution, desc: '易感人群症状有轻度加剧' };
-  if (aqi <= 200) return { level: '中度污染', color: COLORS.aqiMediumPollution, desc: '进一步加剧易感人群症状' };
-  if (aqi <= 300) return { level: '重度污染', color: COLORS.aqiHeavyPollution, desc: '所有人的健康都可能受到影响' };
-  return { level: '严重污染', color: COLORS.aqiSeverePollution, desc: '健康人群也会出现明显症状' };
-};
-
-export default function HomeScreen({ navigation }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [airQuality, setAirQuality] = useState({
-    aqi: 45,
-    pm25: 23,
-    pm10: 45,
-    so2: 8,
-    no2: 25,
-    co: 0.8,
-    o3: 65,
-  });
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const aqiInfo = getAQILevel(airQuality.aqi);
-
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>正在检测空气质量...</Text>
-      </View>
-    );
-  }
+export default function HomeScreen({ onNavigate }) {
+  const { sensorData, aiAnalysis, isAnalyzing, fetchAiAnalysis } = useSensor();
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text variant="titleLarge" style={styles.headerTitle}>空气质量检测</Text>
-        <Text variant="bodySmall" style={styles.headerSubtitle}>实时监测 · 智能分析</Text>
-      </View>
-
-      <Card style={styles.mainCard}>
-        <Card.Content style={styles.mainCardContent}>
-          <View style={styles.aqiCircle}>
-            <Text variant="displayLarge" style={[styles.aqiValue, { color: aqiInfo.color }]}>
-              {airQuality.aqi}
-            </Text>
-            <Text variant="bodySmall" style={styles.aqiUnit}>AQI</Text>
-          </View>
-          <View style={styles.aqiInfo}>
-            <Text variant="headlineMedium" style={[styles.aqiLevel, { color: aqiInfo.color }]}>
-              {aqiInfo.level}
-            </Text>
-            <Text variant="bodySmall" style={styles.aqiDesc}>{aqiInfo.desc}</Text>
-          </View>
-        </Card.Content>
-      </Card>
-
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>主要污染物</Text>
-        <View style={styles.cardGrid}>
-          <AirQualityCard
-            title="PM2.5"
-            value={airQuality.pm25}
-            unit="μg/m³"
-            icon="cloud"
-            color={airQuality.pm25 > 35 ? COLORS.warning : COLORS.success}
-          />
-          <AirQualityCard
-            title="PM10"
-            value={airQuality.pm10}
-            unit="μg/m³"
-            icon="cloud-outline"
-            color={airQuality.pm10 > 50 ? COLORS.warning : COLORS.success}
-          />
+        <Text style={styles.headerTitle}>空气守护者</Text>
+        <View style={styles.headerIcons}>
+          <Text>📊</Text>
+          <Text>📱</Text>
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text variant="titleMedium" style={styles.sectionTitle}>其他污染物</Text>
-        <View style={styles.cardGrid}>
-          <AirQualityCard
-            title="SO₂"
-            value={airQuality.so2}
-            unit="μg/m³"
-            icon="wind"
-            color={COLORS.primary}
-          />
-          <AirQualityCard
-            title="NO₂"
-            value={airQuality.no2}
-            unit="μg/m³"
-            icon="cloud-rain"
-            color={COLORS.secondary}
-          />
-          <AirQualityCard
-            title="CO"
-            value={airQuality.co}
-            unit="mg/m³"
-            icon="smoke"
-            color={COLORS.warning}
-          />
-          <AirQualityCard
-            title="O₃"
-            value={airQuality.o3}
-            unit="μg/m³"
-            icon="sun"
-            color={COLORS.aqiLightPollution}
-          />
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>设备连接</Text>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity 
+            style={styles.containedButton}
+            onPress={() => onNavigate('scan')}
+          >
+            <Text style={styles.buttonText}>扫描设备</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.outlinedButton}
+          >
+            <Text style={styles.outlinedButtonText}>断开</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.statusRow}>
+          <Text style={styles.statusLabel}>状态:</Text>
+          <Text style={styles.statusText}>已连接</Text>
         </View>
       </View>
 
-      <View style={styles.footer}>
-        <Button mode="contained" style={styles.refreshButton} onPress={() => setIsLoading(true)}>
-          刷新数据
-        </Button>
-        <Text variant="bodySmall" style={styles.lastUpdate}>
-          最后更新: 刚刚
-        </Text>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>实时空气质量</Text>
+        <View style={styles.dataGrid}>
+          <View style={styles.dataItem}>
+            <Text style={styles.dataLabel}>PM2.5</Text>
+            <Text style={styles.dataValue}>{sensorData?.pm25?.toFixed(1) || '--'}</Text>
+            <Text style={styles.dataUnit}>μg/m³</Text>
+          </View>
+          <View style={styles.dataItem}>
+            <Text style={styles.dataLabel}>CO₂</Text>
+            <Text style={styles.dataValue}>{sensorData?.co2?.toFixed(0) || '--'}</Text>
+            <Text style={styles.dataUnit}>ppm</Text>
+          </View>
+        </View>
+        <View style={styles.dataGrid}>
+          <View style={styles.dataItem}>
+            <Text style={styles.dataLabel}>温度</Text>
+            <Text style={styles.dataValue}>{sensorData?.temperature?.toFixed(1) || '--'}</Text>
+            <Text style={styles.dataUnit}>°C</Text>
+          </View>
+          <View style={styles.dataItem}>
+            <Text style={styles.dataLabel}>湿度</Text>
+            <Text style={styles.dataValue}>{sensorData?.humidity?.toFixed(1) || '--'}</Text>
+            <Text style={styles.dataUnit}>%</Text>
+          </View>
+        </View>
       </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>AI 健康分析</Text>
+        <TouchableOpacity 
+          style={styles.containedButton}
+          onPress={fetchAiAnalysis}
+          disabled={isAnalyzing}
+        >
+          {isAnalyzing ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>获取空气质量分析</Text>
+          )}
+        </TouchableOpacity>
+        <View style={styles.analysisBox}>
+          <Text style={styles.analysisText}>
+            {aiAnalysis || '当前空气质量良好...'}
+          </Text>
+        </View>
+      </View>
+
+      <TouchableOpacity 
+        style={styles.outlinedButtonFull}
+        onPress={() => onNavigate('history')}
+      >
+        <Text style={styles.outlinedButtonText}>查看历史趋势</Text>
+      </TouchableOpacity>
+
+      <View style={styles.bottomSpacer} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-  },
-  loadingText: {
-    marginTop: 16,
-    color: COLORS.textSecondary,
-  },
+  container: { flex: 1, backgroundColor: COLORS.surface },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 20,
     paddingTop: 40,
     backgroundColor: COLORS.background,
   },
-  headerTitle: {
-    color: COLORS.textPrimary,
-    fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    color: COLORS.textSecondary,
-    marginTop: 4,
-  },
-  mainCard: {
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.textPrimary },
+  headerIcons: { flexDirection: 'row', gap: 12 },
+  card: {
     margin: 16,
-    elevation: 4,
+    backgroundColor: COLORS.background,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  mainCardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 24,
-  },
-  aqiCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: COLORS.surface,
+  sectionTitle: { fontSize: 16, fontWeight: '600', color: COLORS.textPrimary, marginBottom: 12 },
+  buttonRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
+  containedButton: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 20,
   },
-  aqiValue: {
-    fontWeight: 'bold',
-  },
-  aqiUnit: {
-    color: COLORS.textSecondary,
-    marginTop: 4,
-  },
-  aqiInfo: {
+  buttonText: { color: '#fff', fontSize: 14, fontWeight: '500' },
+  outlinedButton: {
     flex: 1,
-  },
-  aqiLevel: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  aqiDesc: {
-    color: COLORS.textSecondary,
-    lineHeight: 1.5,
-  },
-  section: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    color: COLORS.textPrimary,
-    marginBottom: 12,
-    fontWeight: '600',
-  },
-  cardGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  footer: {
-    padding: 20,
-    paddingBottom: 40,
-    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  refreshButton: {
-    marginBottom: 12,
-    width: '100%',
+  outlinedButtonText: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '500' },
+  outlinedButtonFull: {
+    margin: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  lastUpdate: {
-    color: COLORS.textSecondary,
+  statusRow: { flexDirection: 'row', alignItems: 'center' },
+  statusLabel: { color: COLORS.textSecondary },
+  statusText: { color: COLORS.success, marginLeft: 8 },
+  dataGrid: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
+  dataItem: { alignItems: 'center' },
+  dataLabel: { color: COLORS.textSecondary, marginBottom: 8, fontSize: 12 },
+  dataValue: { fontWeight: 'bold', fontSize: 24, color: COLORS.textPrimary },
+  dataUnit: { color: COLORS.textSecondary, fontSize: 12 },
+  analysisBox: {
+    backgroundColor: '#f0f0f0',
+    padding: 12,
+    borderRadius: 8,
+    minHeight: 60,
+    marginTop: 8,
   },
+  analysisText: { fontSize: 14, color: '#333', lineHeight: 20 },
+  bottomSpacer: { height: 100 },
 });

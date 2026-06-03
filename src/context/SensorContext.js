@@ -1,139 +1,75 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { generateMockSensorData, generateHistoryData } from '../utils/mockData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-const SensorContext = createContext(null);
+const SensorContext = createContext();
 
-export const SensorProvider = ({ children, useMock = true }) => {
-  const [sensorData, setSensorData] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function SensorProvider({ children }) {
+  const [sensorData, setSensorData] = useState({
+    pm25: 45,
+    co2: 410,
+    temperature: 22.5,
+    humidity: 58,
+  });
   const [aiAnalysis, setAiAnalysis] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [history, setHistory] = useState([]);
 
-  const updateSensorData = useCallback((data) => {
-    setSensorData(data);
-    setHistory(prev => {
-      const newHistory = [...prev, { data, timestamp: Date.now() }];
-      return newHistory.slice(-50);
-    });
-  }, []);
-
-  const saveData = useCallback(async (data) => {
-    try {
-      await AsyncStorage.setItem(
-        'latestSensorData', 
-        JSON.stringify({ data, timestamp: Date.now() })
-      );
-      await AsyncStorage.setItem(
-        'sensorHistory', 
-        JSON.stringify(history)
-      );
-    } catch (error) {
-      console.warn('保存数据失败:', error);
-    }
-  }, [history]);
-
-  const loadLatestData = useCallback(async () => {
-    try {
-      const saved = await AsyncStorage.getItem('latestSensorData');
-      const savedHistory = await AsyncStorage.getItem('sensorHistory');
-      
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSensorData(parsed.data);
-      } else if (useMock) {
-        setSensorData(generateMockSensorData());
-      }
-      
-      if (savedHistory) {
-        setHistory(JSON.parse(savedHistory));
-      } else if (useMock) {
-        setHistory(generateHistoryData(10));
-      }
-    } catch (error) {
-      console.warn('读取历史数据失败:', error);
-      if (useMock) {
-        setSensorData(generateMockSensorData());
-        setHistory(generateHistoryData(10));
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [useMock]);
-
-  const generateMockData = useCallback(() => {
-    const mockData = generateMockSensorData();
-    updateSensorData(mockData);
-    saveData(mockData);
-    return mockData;
-  }, [updateSensorData, saveData]);
-
-  const clearHistory = useCallback(async () => {
-    try {
-      await AsyncStorage.removeItem('sensorHistory');
-      await AsyncStorage.removeItem('latestSensorData');
-      setHistory([]);
-      setSensorData(null);
-    } catch (error) {
-      console.warn('清除数据失败:', error);
-    }
-  }, []);
-
-  const fetchAiAnalysis = useCallback(async () => {
-    if (!sensorData) return;
-    
+  const fetchAiAnalysis = useCallback(() => {
     setIsAnalyzing(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const pm25Level = sensorData.pm25;
-      const co2Level = sensorData.co2;
-      
-      let analysis = '';
-      if (pm25Level < 35 && co2Level < 1000) {
-        analysis = '当前空气质量良好，适合户外活动。建议保持室内通风，呼吸新鲜空气有益健康。';
-      } else if (pm25Level >= 35 && pm25Level < 75) {
-        analysis = '当前空气质量轻度污染，敏感人群应减少户外活动时间。建议佩戴口罩出行。';
-      } else if (co2Level >= 1000 && co2Level < 1500) {
-        analysis = '室内二氧化碳浓度偏高，建议及时开窗通风，保持空气流通。';
-      } else {
-        analysis = '当前空气质量较差，建议减少外出，保持室内空气净化设备开启。';
-      }
-      setAiAnalysis(analysis);
-    } catch (error) {
-      setAiAnalysis('获取分析失败，请稍后重试');
-    } finally {
+    setTimeout(() => {
+      setAiAnalysis('当前空气质量良好，建议开窗通风。');
       setIsAnalyzing(false);
+    }, 2000);
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSensorData(prev => {
+        const newData = {
+          pm25: Math.max(0, Math.min(100, prev.pm25 + (Math.random() - 0.5) * 10)),
+          co2: Math.max(300, Math.min(1000, prev.co2 + (Math.random() - 0.5) * 20)),
+          temperature: Math.max(15, Math.min(35, prev.temperature + (Math.random() - 0.5) * 0.5)),
+          humidity: Math.max(30, Math.min(90, prev.humidity + (Math.random() - 0.5) * 2)),
+        };
+        return newData;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (sensorData) {
+      setHistory(prev => [...prev, {
+        timestamp: Date.now(),
+        data: { ...sensorData },
+      }]);
     }
   }, [sensorData]);
 
-  useEffect(() => {
-    loadLatestData();
-  }, [loadLatestData]);
+  const value = {
+    sensorData,
+    aiAnalysis,
+    isAnalyzing,
+    fetchAiAnalysis,
+    history,
+    clearHistory,
+  };
 
   return (
-    <SensorContext.Provider value={{
-      sensorData,
-      history,
-      isLoading,
-      aiAnalysis,
-      isAnalyzing,
-      updateSensorData,
-      saveData,
-      clearHistory,
-      fetchAiAnalysis,
-      generateMockData,
-    }}>
+    <SensorContext.Provider value={value}>
       {children}
     </SensorContext.Provider>
   );
-};
+}
 
-export const useSensor = () => {
+export function useSensor() {
   const context = useContext(SensorContext);
   if (!context) {
     throw new Error('useSensor must be used within a SensorProvider');
   }
   return context;
-};
+}
