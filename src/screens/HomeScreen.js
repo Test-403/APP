@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { useSensor } from '../context/SensorContext';
+import useAIReport from '../hooks/useAIReport';
 
 export default function HomeScreen({ onNavigate }) {
-  const { sensorData, aiAnalysis, isAnalyzing, fetchAiAnalysis } = useSensor();
+  const { sensorData } = useSensor();
+  const { isLoading: isAnalyzing, reportText: aiAnalysis, errorMsg, generateReport } = useAIReport();
+
+  // 获取空气质量分析
+  const fetchAiAnalysis = async () => {
+    if (isAnalyzing) return;
+    
+    // 使用传感器数据调用 AI 分析
+    const data = {
+      temp: parseFloat(sensorData?.temperature) || 25.5,
+      co2: parseFloat(sensorData?.co2) || 600,
+      pm25: parseFloat(sensorData?.pm25) || 35,
+      hcho: parseFloat(sensorData?.hcho) || 0.08,
+    };
+    
+    await generateReport(data);
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -78,9 +95,18 @@ export default function HomeScreen({ onNavigate }) {
             <Text style={styles.buttonText}>获取空气质量分析</Text>
           )}
         </TouchableOpacity>
+        
+        {/* 错误提示 */}
+        {errorMsg && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>❌ {errorMsg}</Text>
+          </View>
+        )}
+        
+        {/* 分析结果展示 */}
         <View style={styles.analysisBox}>
           <Text style={styles.analysisText}>
-            {aiAnalysis || '当前空气质量良好...'}
+            {aiAnalysis || '点击上方按钮获取空气质量分析报告...'}
           </Text>
         </View>
       </View>
@@ -165,5 +191,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   analysisText: { fontSize: 14, color: '#333', lineHeight: 20 },
+  errorBox: {
+    backgroundColor: '#FFF5F5',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    borderColor: COLORS.error,
+    borderWidth: 1,
+  },
+  errorText: { fontSize: 14, color: COLORS.error },
   bottomSpacer: { height: 100 },
 });
